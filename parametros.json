@@ -1,0 +1,5 @@
+{
+  "tamanho_bloco_bytes": 1024,
+  "tipo_registro": "variavel",
+  "espalhamento": false
+}

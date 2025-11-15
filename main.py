@@ -1,64 +1,48 @@
-from faker import Faker
-from faker.providers import BaseProvider
-from faker.providers import DynamicProvider
+"""
+Este arquivo apenas chama as funções dos módulos locais (executar dentro da
+pasta `tp1`).
+"""
 
-fake = Faker('pt_BR')
+from glob import glob
+import os
+import sys
 
-fake.bothify()
-# ##matricula
-# print(fake.unique.bothify(text='##.#.####'))
-# ##nome
-# print(fake.name())
-# ##cpf
-# print(fake.unique.bothify(text='###.###.###-##'))
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+if SCRIPT_DIR not in sys.path:
+    sys.path.insert(0, SCRIPT_DIR)
 
-nome_do_curso_provider = DynamicProvider (
-    provider_name="curso",
-    elements=["SJM","CJM", "ENP"],
-)
+try:
+    import gerar_dados
+    import parametros
+    import organizar_blocos
+    import analisar_blocos
+    import resetar
+except Exception as e:
+    print("Erro ao importar módulos locais. Certifique-se de que os arquivos estão em 'tp1' e execute este script com Python.")
+    print(e)
+    sys.exit(1)
 
-fake.add_provider(nome_do_curso_provider)
-# #curso
-# print(fake.curso())
-  
-# ##nome mae
-# print(fake.name_female())
 
-# ##nome pai
-# print(fake.name_male())
-  
-# #ano de ingresso
-# print(fake.random_int(min=2000, max=2025))
+def main():
+    resetar.resetar_projeto()
+    
+    print("=== Gerar dados ===")
+    gerar_dados.gerar_dados()
 
-# #CA
-# print(fake.bothify(text='#,##'))    
+    print("\n=== Parâmetros ===")
+    params = parametros.perguntar_parametros()
 
-import pickle
-import os.path
+    registros = parametros.carregar_alunos()
+    if registros is None:
+        print("Nenhum registro disponível para organizar. Saindo.")
+        return
 
-quant = int(input("Defina o número total de registros a serem gerados: "))
-# Gerar lista de registros falsos
-alunos = []
-for _ in range(quant):
-    pessoa = {
-        "matricula": fake.unique.bothify(text='##.#.####'),
-        "nome": fake.name(),
-        "cpf": fake.unique.bothify(text='###.###.###-##'),
-        "curso": fake.curso(),
-        "nome_da_mae": fake.name_female(),
-        "nome_do_pai": fake.name_male(),
-        "ano_de_ingresso": fake.random_int(min=2000, max=2025),
-        "ca": fake.bothify(text='#,##')
-    }
-    alunos.append(pessoa)
+    print("\n=== Organizar blocos ===")
+    organizar_blocos.organizar(params, registros)
 
-# Gravar os registros em um arquivo binário (.dat)
-with open("alunos.dat", "wb") as arquivo:
-    pickle.dump(alunos, arquivo)
+    print("\n=== Análise de blocos ===")
+    analisar_blocos.analisar_blocos()
 
-print("Registros salvos com sucesso em 'pessoas.dat' ✅")
+if __name__ == '__main__':
+    main()
 
-file_path = r'./alunos.dat'
-
-sz = os.path.getsize(file_path)
-print(f'The {file_path} size is', sz, 'bytes')
